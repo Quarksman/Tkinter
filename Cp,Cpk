@@ -1,0 +1,159 @@
+import tkinter as tk
+from tkinter import ttk
+import tkinter.font as font
+
+
+root=tk.Tk()
+root.title('Process Capability Calculation Table by KP')
+
+try:
+    from ctypes import windll
+    windll.shcore.SetProcessDpiAwareness(1)
+except:
+    pass
+
+
+master_font=font.Font(family='Arial Narrow',size=12,weight='bold')
+General_font=font.Font(family='Arial Narrow',size=10)
+Input_font=font.Font(family='Arial Narrow',size=12)
+
+
+style=ttk.Style(root)
+style.theme_use('vista')
+
+input_frame=ttk.Frame(root,padding=(20,10,120,20))
+input_frame.grid(row=0,column=0)
+root.columnconfigure(0,weight=1)
+
+x_bar=tk.StringVar()
+sigma=tk.StringVar()
+LSL=tk.StringVar()
+USL=tk.StringVar()
+Center=tk.StringVar()
+Cpk_interpret_result=tk.StringVar(value='What next?')
+Cp_interpret_result=tk.StringVar()
+Cpk_Display=tk.StringVar(value='show here!!')
+Cp_Display=tk.StringVar(value='show here!!')
+Cp_rank_display=tk.StringVar(value='show here!!')
+Cpk_rank_display=tk.StringVar(value='show here!!')
+Cpk_rank=tk.StringVar()
+
+def process_capability(*args):
+    try:
+        Xbar=float(x_bar.get())
+        Std=float(sigma.get())
+        lower_sl=float(LSL.get())
+        upper_sl=float(USL.get())
+        Cpu=(upper_sl-Xbar)/(3*Std)
+        Cpl=Xbar-lower_sl/(3*Std)
+        Cpk=min(Cpu,Cpl)
+        Cpk_Display.set(f'{Cpk:.3f}')
+        Cp=(upper_sl-lower_sl)/(6*Std)
+        Cp_Display.set(f'{Cp:.3f}')
+        if Cpk >= 1.67:
+            Cpk_rank_display.set(f'S')
+            Cpk_interpret_result.set(f'Process is capable,continue process, running closure target.Please sustain')
+        elif 1.33 <= Cpk <1.67:
+            Cpk_rank_display.set(f'A')
+            Cpk_interpret_result.set(f'Process is capable,continue process, running closure target.Please sustain')
+        elif 1.00<= Cpk <1.33:
+            Cpk_rank_display.set(f'B')
+            Cpk_interpret_result.set(f'Process remain capable,mean little shifted of the target spec.Please analyze')
+
+        else:
+            Cpk_rank_display.set(f'C')
+            Cpk_interpret_result.set(f'Process incapable,the mean shifted of the target spec. Please analyze')
+
+        if Cp >= 1.67:
+            Cp_rank_display.set(f'S')
+            Cp_interpret_result.set('Process spread very less and meet with spec')
+        elif 1.33 <= Cp < 1.67:
+            Cp_rank_display.set(f'A')
+            Cp_interpret_result.set('Process spread very less and meet with spec')
+        elif 1.00 <= Cp < 1.33:
+            Cp_rank_display.set(f'B')
+            Cp_interpret_result.set('Process spread little wide and fit with spec')
+        else:
+            Cp_rank_display.set(f'C')
+            Cp_interpret_result.set('Process spread very wide and incapable. Please decrease process spread first')
+
+    except ValueError:
+        pass
+
+
+
+data_input=tk.Label(input_frame,text='DATA INPUT',font=Input_font)
+data_input.grid(row=0,column=0,sticky='E')
+
+x_bar_label=tk.Label(input_frame,text='x-bar',font=General_font)
+x_bar_label.grid(row=1,column=0,sticky='E')
+
+x_bar_entry=tk.Entry(input_frame,width=10,textvariable=x_bar,font=Input_font)
+x_bar_entry.grid(row=1,column=1,sticky='W')
+
+sigma_label=tk.Label(input_frame,text='sigma',font=General_font)
+sigma_label.grid(row=1,column=2,sticky='E')
+
+sigma_entry=tk.Entry(input_frame,width=10,textvariable=sigma,font=Input_font)
+sigma_entry.grid(row=1,column=3,sticky='W')
+
+spec=tk.Label(input_frame,text='SPECIFICATION')
+spec.grid(row=2,column=0,sticky='E',pady=(30,10))
+
+LSL_label=tk.Label(input_frame,text='LSL',font=General_font)
+LSL_label.grid(row=3,column=0,sticky='E')
+
+LSL_entry=tk.Entry(input_frame,width=10,textvariable=LSL,font=Input_font)
+LSL_entry.grid(row=3,column=1,sticky='W')
+
+USL_label=tk.Label(input_frame,text='USL',font=General_font)
+USL_label.grid(row=3,column=2,padx=(120,0),sticky='E')
+
+USL_Entry=tk.Entry(input_frame,width=10,textvariable=USL,font=Input_font)
+USL_Entry.grid(row=3,column=3,sticky='W')
+
+Cal_table=tk.Label(input_frame,text='CALCULATION RESULT')
+Cal_table.grid(row=4,column=0,sticky='E',pady=(30,10))
+
+Cp_label=tk.Label(input_frame,text='Cp value',font=General_font)
+Cp_label.grid(row=5,column=0,sticky='E')
+
+Cp_view=tk.Label(input_frame,textvariable=Cp_Display,font=master_font,fg='blue')
+Cp_view.grid(row=5,column=1,sticky='W')
+
+Cpk_label=tk.Label(input_frame,text='Cpk value',font=General_font)
+Cpk_label.grid(row=5,column=2,sticky='E')
+
+Cpk_view=tk.Label(input_frame,textvariable=Cpk_Display,font=master_font,fg='blue')
+Cpk_view.grid(row=5,column=3,sticky='W')
+
+Cp_rank_label=tk.Label(input_frame,text='Cp rank',font=General_font)
+Cp_rank_label.grid(row=6,column=0,sticky='E',pady=(20,0))
+
+Cp_rank_label_result=tk.Label(input_frame,textvariable=Cp_rank_display,font=master_font,fg='blue')
+Cp_rank_label_result.grid(row=6,column=1,sticky='W',pady=(20,0))
+
+Cpk_rank_label=tk.Label(input_frame,text='Cpk rank',font=General_font)
+Cpk_rank_label.grid(row=6,column=2,sticky='E',pady=(20,0))
+
+Cpk_rank_result=tk.Label(input_frame,textvariable=Cpk_rank_display,font=master_font,fg='blue')
+Cpk_rank_result.grid(row=6,column=3,sticky='W',pady=(20,0))
+
+Cpk_Interpret_label=tk.Label(input_frame,text='INTERPRET RESULT')
+Cpk_Interpret_label.grid(row=7,column=0,sticky='E',pady=(30,10))
+
+Cpk_Interpret=tk.Label(input_frame,pady=10,textvariable=Cpk_interpret_result,font=master_font,fg='blue')
+Cpk_Interpret.grid(row=8,column=1,sticky='W',columnspan=5)
+
+Cp_Interpret=tk.Label(input_frame,pady=10,textvariable=Cp_interpret_result,font=master_font,fg='blue')
+Cp_Interpret.grid(row=9,column=1,sticky='W',columnspan=5)
+
+Calc_button=tk.Button(input_frame,text='Calculate',command=process_capability)
+Calc_button.grid(row=10,column=1,pady=(10,30))
+
+Calc_button=tk.Button(input_frame,text='  Quite  ',command=root.destroy)
+Calc_button.grid(row=10,column=3,pady=(10,30))
+
+root.bind('<Enter>',process_capability)
+
+root.mainloop()
